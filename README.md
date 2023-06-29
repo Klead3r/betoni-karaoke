@@ -1,6 +1,9 @@
 # betoni-karaoke
 
 ## Setup
+- Install NodeJS
+   - Windows: https://nodejs.org/en
+   - Linux: https://nodejs.org/en/download/package-manager
 - Clone or copy all files
 - Open Terminal or PowerShell and run following command in project folder: npm install
 - Add videos -folder and put video files there
