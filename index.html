@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Video Player</title>
+  <style>
+    #app {
+      width: 100%;
+      max-width: 1080px;
+      position: relative;
+      left: 50%;
+      transform: translate(-50%,0);
+    }
+
+    #video video {
+      width: 100%;
+    }
+
+    #songlist ul {
+      cursor:pointer;
+      font-size: 24px;
+      list-style-type: none;
+    }
+    #songlist li {
+      margin-left: -40px;
+      padding: 5px 0;
+    }
+    #songlist li:hover {
+      color: red;
+    }
+
+    #logView {
+      display: none;
+      background: rgba(0,0,0,0.5);
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+
+    #logView .dialog {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    
+    #logView table td {
+      border: 1px solid #000;
+      font-size: 20px;
+      padding: 5px 10px;
+    }
+    
+    .wrap {
+      position: relative;
+      padding: 30px;
+      background: #fff;
+      height: 100%;
+      width: 100%;
+    }
+
+    .close {
+      position: absolute;
+      top: 0;
+      right: 0;
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="app">
+    <div id="video">
+      <video src="" height="300px" controls></video>
+    </div>
+    <br /><br />
+    <input type="button" onclick="getLog()" value="Get Log" />
+    <br /><br />
+    <input id="search" onkeyup="searchSongs()" type="text"/>
+    <div id="songlist"></div>
+  </div>
+
+    <div id="logView">
+      <div class="dialog">
+        <div class="wrap">
+          <input class="close" type="button" onclick="closeLog()" value="X" />
+          <div id="logList"></div>
+        </div>
+      </div>
+    </div>
+
+<script>
+  var video = document.getElementById('video');
+  var songs = [];
+  var filteredSongs = [];
+  var songlist = document.getElementById('songlist');
+  var timeout = false;
+  
+  function logSong (song) {
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', '/log/' + song, true);
+    xhr2.responseType = 'json';
+    xhr2.onload = function() {
+      var status = xhr2.status;
+      var response = xhr2.response;
+    };
+    xhr2.send();
+  }
+
+  function getLog () {
+    var xhr2 = new XMLHttpRequest();
+    xhr2.open('GET', '/logfile', true);
+    xhr2.responseType = 'csv';
+    xhr2.onload = function() {
+      var status = xhr2.status;
+      var response = xhr2.response;
+      
+      var arr = response.split('\n');
+      var counts = {};
+      arr.forEach(function (log) {
+        if (log !== '') {
+          if (!counts[log]) {
+            counts[log] = 0;
+          }
+          counts[log]++;
+        }
+      })
+
+      var list = [];
+      Object.keys(counts).forEach(function (key) {
+        list.push({song: key, count: counts[key]})
+      })
+
+      list.sort((a, b) => {
+        if ( a.count > b.count ){
+          return -1;
+        }
+        if ( a.count < b.count ){
+          return 1;
+        }
+        return 0;
+      })
+
+      var logHtml = '<tr><td><b>SONG</b></td><td><b>COUNT</b></td></tr>';
+      list.forEach(function (l) {
+          logHtml += '<tr><td>' + l.song + '</td><td>' + l.count + '</td></tr>';
+      })
+      document.getElementById('logList').innerHTML = '<table>' + logHtml + '</table>';
+      document.getElementById('logView').style.display = 'block';
+    };
+    xhr2.send();
+  }
+
+  function closeLog () {
+    document.getElementById('logView').style.display = 'none';
+  }
+
+  function selectSong (song, path) {
+    video.innerHTML = '<video src="/video/' + path + '" height="300px" controls></video>';
+    clearTimeout(timeout)
+    timeout = setTimeout(function () {logSong(song)}, 10000);
+  }
+
+  function updateSongsList () {
+    var songHtml = '';
+    filteredSongs.forEach(function (s) {
+        songHtml += '<li onclick="selectSong(\'' + s.name + '\',\'' + s.path + '\')">' + s.name + '</li>';
+    })
+    songlist.innerHTML = '<ul>' + songHtml + '</ul>';
+  }
+
+  function searchSongs () {
+    var search = document.getElementById('search').value.split(' ');
+    var remainingSongs = songs;
+
+    search.forEach(function (word) {
+      remainingSongs = remainingSongs.filter(s => s.name.includes(word));
+    });
+
+    filteredSongs = remainingSongs;
+    updateSongsList();
+  }
+
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', '/files', true);
+  xhr.responseType = 'json';
+  xhr.onload = function() {
+    var status = xhr.status;
+    var response = xhr.response;
+    songs = response;
+    filteredSongs = response;
+    updateSongsList();
+  };
+  xhr.send();
+</script>
+</body>
+</html>
