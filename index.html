@@ -57,6 +57,7 @@
       background: #fff;
       border-radius: 20px;
       padding: 0 10px;
+      margin: 10px 0;
       border: 2px solid;
     }
     #songlist ul {
@@ -70,6 +71,10 @@
     }
     #songlist li:hover {
       color: red;
+    }
+
+    .log_button {
+      margin-bottom: 10px;
     }
 
     #logView {
@@ -132,12 +137,10 @@
   <div id="app">
     <input id="search" class="border-1 text-1" placeholder="Type your song here..." onkeyup="searchSongs()" type="text"/>
     <br />
+    <input type="button" class="log_button" onclick="getLog()" value="Get Log" />
     <div id="video">
-      <video src="" height="300px" controls></video>
+      <video src="" height="200px" controls></video>
     </div>
-    <br />
-    <input type="button" onclick="getLog()" value="Get Log" />
-    <br /><br />
     <div id="songlist" class="border-1 text-1"></div>
   </div>
 
@@ -218,7 +221,7 @@
 
   function selectSong (song, path) {
     console.log({elem: encodeURI(path)})
-    video.innerHTML = '<video id="videoElem" src="/video/' + path + '" height="300px" controls></video>';
+    video.innerHTML = '<video id="videoElem" src="/video/' + path + '" height="200px" controls></video>';
     clearTimeout(timeout)
     timeout = setTimeout(function () {logSong(song)}, 10000);
 
