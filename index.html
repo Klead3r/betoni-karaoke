@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>Video Player</title>
+	<title>Club Betoni Karaoke</title>
   <style>
     #app {
       width: 100%;
@@ -11,10 +11,54 @@
       transform: translate(-50%,0);
     }
 
+    .betoni-title {
+      text-align: center;
+      font-size: 80px;
+      line-height: 1;
+      padding: 0;
+      margin: 0;
+      -webkit-text-stroke: 5px #029cc0;
+      color: grey;
+    }
+
+    .bg-lonkero {
+      background: url('/img/lonkero.png');
+    }
+
+    .bg-1 {
+      background: #029cc0;
+    }
+
+    .bg-2 {
+      background: grey;
+    }
+
+    .border-1 {
+      border-color: #029cc0!important;
+    }
+
+    .border-2 {
+      border-color: grey!important;
+    }
+
+    .text-1 {
+      color: #029cc0!important;
+    }
+
+    .text-2 {
+      color: grey!important;
+    }
+
     #video video {
       width: 100%;
     }
 
+    #songlist {
+      background: #fff;
+      border-radius: 20px;
+      padding: 0 10px;
+      border: 2px solid;
+    }
     #songlist ul {
       cursor:pointer;
       font-size: 24px;
@@ -40,6 +84,9 @@
 
     #logView .dialog {
       position: fixed;
+      height: 90%;
+      overflow-y: scroll;
+      overflow-x: visible;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
@@ -56,7 +103,7 @@
       padding: 30px;
       background: #fff;
       height: 100%;
-      width: 100%;
+      width: calc(100% -30px);
     }
 
     .close {
@@ -67,18 +114,31 @@
       font-size: 20px;
     }
 
+    #search {
+      position: relative;
+      left: 5%;
+      width: 90%;
+      border-radius: 30px;
+      height: 50px;
+      margin: 20px 0;
+      text-indent: 20px;
+      font-size: 30px;
+    }
+
   </style>
 </head>
-<body>
+<body class="bg-lonkero">
+  <h1 class="betoni-title">Club Betoni Karaoke</h1>
   <div id="app">
+    <input id="search" class="border-1 text-1" placeholder="Type your song here..." onkeyup="searchSongs()" type="text"/>
+    <br />
     <div id="video">
       <video src="" height="300px" controls></video>
     </div>
-    <br /><br />
+    <br />
     <input type="button" onclick="getLog()" value="Get Log" />
     <br /><br />
-    <input id="search" onkeyup="searchSongs()" type="text"/>
-    <div id="songlist"></div>
+    <div id="songlist" class="border-1 text-1"></div>
   </div>
 
     <div id="logView">
@@ -157,6 +217,7 @@
   }
 
   function selectSong (song, path) {
+    console.log({elem: encodeURI(path)})
     video.innerHTML = '<video id="videoElem" src="/video/' + path + '" height="300px" controls></video>';
     clearTimeout(timeout)
     timeout = setTimeout(function () {logSong(song)}, 10000);
@@ -178,17 +239,17 @@
   function updateSongsList () {
     var songHtml = '';
     filteredSongs.forEach(function (s) {
-        songHtml += '<li onclick="selectSong(\'' + s.name + '\',\'' + s.path + '\')">' + s.name + '</li>';
+        songHtml += '<li onclick="selectSong(\'' + s.name.replace('\'', '\\\'') + '\',\'' + encodeURI(s.path).replace('\'', '\\\'') + '\')">' + s.name + '</li>';
     })
     songlist.innerHTML = '<ul>' + songHtml + '</ul>';
   }
 
   function searchSongs () {
-    var search = document.getElementById('search').value.split(' ');
+    var search = document.getElementById('search').value.toLowerCase().split(' ');
     var remainingSongs = songs;
 
     search.forEach(function (word) {
-      remainingSongs = remainingSongs.filter(s => s.name.includes(word));
+      remainingSongs = remainingSongs.filter(s => s.name.toLowerCase().includes(word));
     });
 
     filteredSongs = remainingSongs;
